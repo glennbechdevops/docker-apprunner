@@ -1,6 +1,8 @@
 # Oppgave: Fra Spring Boot til AWS App Runner 
 
-I denne oppgaven skal du:
+Denne oppgaven er mindre detaljert beskrevet en vanlig, og introduserer en ny tjeneste vi vil jobbe med senere.
+
+#
 
 1. Lage en ny **Spring Boot-applikasjon** via [Spring Initializr](https://start.spring.io/)
 2. Containerisere applikasjonen med Docker
