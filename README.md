@@ -1,131 +1,63 @@
-# Oppgave: Fra Spring Boot til AWS App Runner 
+# Oppgave: Fra Spring Boot til AWS App Runner
 
-Denne oppgaven er mindre detaljert beskrevet en vanlig, og introduserer en ny tjeneste vi vil jobbe med senere.
+Denne oppgaven er mindre detaljert beskrevet enn vanlig, og introduserer en ny tjeneste vi vil jobbe med senere. Du skal selv finne ut av kommandoer, flagg og konfigurasjon basert på det du har lært i tidligere oppgaver og offisiell dokumentasjon.
 
-#
+## Læringsmål
 
-1. Lage en ny **Spring Boot-applikasjon** via [Spring Initializr](https://start.spring.io/)
-2. Containerisere applikasjonen med Docker
-3. Publisere imaget til **Amazon ECR**
-4. Starte en **AWS App Runner-tjeneste** fra imaget ditt
+- Bygge et container-image av en Spring Boot-applikasjon med Docker
+- Publisere et image til et privat container-registry (Amazon ECR)
+- Starte en tjeneste i AWS App Runner fra et image
+- Bli vant til å lese dokumentasjon fremfor steg-for-steg-oppskrifter
 
-## Steg 1: Opprett Spring Boot-applikasjonen
+## Kom i gang
 
-- Gå til [https://start.spring.io/](https://start.spring.io/)
-- Velg:
-  - **Project:** Maven
-  - **Language:** Java
-  - **Spring Boot:** 3.x (seneste versjon)
-  - **Packaging:** Jar
-  - **Java:** 21
-- **viktig** Legg til dependency: `Spring Web` (for REST API)
-- Trykk **Generate**, last ned zip, og pakk ut prosjektet inn i repoet ditt (i Codespaces).  
+En **fork** er din egen kopi av et GitHub-repo, koblet tilbake til originalen. Du fork-er dette repoet slik at du får et sted å legge din egen kode og innleveringen din, uten å endre kildeprosjektet.
 
-Lag en enkel controller, f.eks. `HelloController.java`:
+1. Fork dette repoet til din egen GitHub-konto.
+2. Åpne forken i Codespaces.
+3. Legg Spring Boot-prosjektet ditt i rotmappen av forken.
 
-```java
-package com.example.demo;
+## AWS-tjenester vi bruker
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+- **Amazon ECR (Elastic Container Registry)** — privat registry for Docker-images. Her lagrer du imaget ditt slik at App Runner kan hente det.
+- **AWS App Runner** — kjører container-baserte web-tjenester direkte fra et image i ECR. App Runner tar seg av HTTPS, autoskalering og load balancing.
 
-@RestController
-public class HelloController {
-    @GetMapping("/")
-    public String hello() {
-        return "Hello from Spring Boot on App Runner!";
-    }
-}
-```
+## Hva du skal gjøre
 
-Bygg og test applikasjonen i Codespaces:
+1. Lag en enkel Spring Boot-applikasjon
+2. Containeriser den med Docker
+3. Publiser imaget til Amazon ECR
+4. Kjør imaget som en App Runner-tjeneste
 
-```shell
-./mvnw spring-boot:run
-```
+## Steg 1: Spring Boot-applikasjon
 
-Sjekk 
+Bruk [Spring Initializr](https://start.spring.io/) til å generere et Maven-prosjekt med Java 21 og dependency-en `Spring Web`. Skriv en controller som returnerer en tekststreng på rotstien `/`. Test lokalt i Codespaces før du går videre.
 
-```shell
-curl http://localhost:8080/
-```
+## Steg 2: Dockerfile
 
-## Steg 2: Lag en Dockerfile
+Skriv en `Dockerfile` som bygger og kjører applikasjonen. Tenk på:
 
-Opprett en **Dockerfile** i rotmappen (**viktig** samme mappe som pom.xml)
+- Hvilket base-image passer for å bygge, og hvilket passer for å kjøre?
+- Hvilken port lytter Spring Boot på som standard?
+- Hvordan starter du jar-en?
 
-```dockerfile
-FROM eclipse-temurin:21-jdk AS build
-WORKDIR /app
-COPY . .
-RUN ./mvnw -q package -DskipTests
+Bygg imaget lokalt og verifiser at applikasjonen svarer.
 
-FROM eclipse-temurin:21-jre
-WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
+## Steg 3: Publiser til Amazon ECR
 
-Bygg lokalt i Codespaces og kjør en test:
+Du trenger AWS CLI konfigurert med dine aksessnøkler og region `eu-west-1`. Deretter skal du:
 
-```bash
-docker build -t springboot-demo .
-docker run -p 8080:8080 springboot-demo
-```
+- Opprette et ECR-repository
+- Autentisere Docker mot ECR
+- Tagge imaget med full ECR-URI
+- Pushe imaget
 
-## Steg 3: Push til Amazon ECR
+Slå opp de nødvendige `aws ecr`- og `docker`-kommandoene selv.
 
-0. Laste ned aws cli
+## Steg 4: App Runner-tjeneste
 
-```
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
-```
+Opprett en App Runner-tjeneste fra ECR-imaget ditt via AWS Console. Pass på at porten stemmer med det applikasjonen faktisk lytter på. Når tjenesten er `Running`, får du en public URL du kan åpne i nettleseren.
 
-Før du fortsetter må du også kjøre `aws configure` legge inn dine aksessnøkler, og velge eu-west-1 som region
+## Levering
 
-1. Lag ECR-repoet ditt:
-
-Bytt ut navnet <repo name>
- ```bash
- aws ecr create-repository --repository-name springboot-demo
- ```
-
-3. Logg inn i ECR:
-
-   ```bash
-   aws ecr get-login-password --region eu-west-1 \
-     | docker login --username AWS --password-stdin 244530008913.dkr.ecr.eu-west-1.amazonaws.com
-   ```
-
-4. Tagg og push:
-
-   ```bash
-   docker tag springboot-demo:latest 244530008913.dkr.ecr.eu-west-1.amazonaws.com/springboot-demo:latest
-   docker push 244530008913.dkr.ecr.eu-west-1.amazonaws.com/springboot-demo:latest
-   ```
-
-
-## Steg 4: Lag en App Runner-tjeneste
-
-1. Gå til **AWS Console → App Runner → Create service**
-2. Velg **Container registry → Amazon ECR**
-3. Finn repoet `springboot-demo` og velg imaget ditt
-4. Sett port til `8080`
-5. Deploy 🎉
-
-Når tjenesten kjører får du en **public URL** som du kan åpne i nettleseren.
-
----
-
-## Oppsummering
-
-Du har nå:
-
-* Laget en Spring Boot-app med **Spring Initializr**
-* Bygget og containerisert applikasjonen med **Docker**
-* Publisert imaget til **Amazon ECR**
-* Deployet applikasjonen som en **App Runner-tjeneste**
-```
+Push koden din (Spring Boot-prosjekt og Dockerfile) til forken din, og lever inn URL-en til App Runner-tjenesten.
