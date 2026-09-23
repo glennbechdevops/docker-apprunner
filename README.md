@@ -58,6 +58,6 @@ Slå opp de nødvendige `aws ecr`- og `docker`-kommandoene selv.
 
 Opprett en App Runner-tjeneste fra ECR-imaget ditt via AWS Console. Pass på at porten stemmer med det applikasjonen faktisk lytter på. Når tjenesten er `Running`, får du en public URL du kan åpne i nettleseren.
 
-## Levering
+## Deployment
 
 Push koden din (Spring Boot-prosjekt og Dockerfile) til forken din, og lever inn URL-en til App Runner-tjenesten.
