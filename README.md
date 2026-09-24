@@ -28,6 +28,7 @@ En **fork** er din egen kopi av et GitHub-repo, koblet tilbake til originalen. D
 2. Containeriser den med Docker
 3. Publiser imaget til Amazon ECR
 4. Kjør imaget som en ECS-tjeneste i Express mode
+5. Du får et miljø med Docker om du lager et Codespace fra dette repoet
 
 ## Steg 1: Spring Boot-applikasjon
 
