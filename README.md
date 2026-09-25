@@ -68,6 +68,6 @@ Når tjenesten er oppe, får du en offentlig URL (via load balanceren) som du ka
 
 > Tips: Express mode kan også opprettes med Terraform via ressursen `aws_ecs_express_gateway_service` i AWS-provideren. Det er ikke nødvendig for denne oppgaven, men greit å vite til senere når vi går over til IaC.
 
-## Deployment
 
-Push koden din (Spring Boot-prosjekt og Dockerfile) til forken din, og lever inn URL-en til ECS-tjenesten.
+
+
